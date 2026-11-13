@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOFENG Nano</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#005;color:#fff;font-family:monospace}
+.top{background:#008;padding:4px}
+textarea{width:100%;height:calc(100vh - 60px);background:#002;color:#0f0;border:none;outline:none;font:14px monospace}
+.foot{background:#008;padding:4px}
+</style>
+</head>
+<body>
+<div class="top">MOFENG nano 编辑器 | Ctrl+S 保存模拟</div>
+<textarea id="edit"></textarea>
+<div class="foot">F2 返回终端: <a href="index.html">index.html</a></div>
+<script>
+const ta = document.getElementById("edit");
+ta.value = "# 在这里编辑文本\n";
+document.onkeydown = e=>{
+  if(e.ctrlKey && e.key === "s"){
+    e.preventDefault();
+    alert("【模拟保存】内容已暂存");
+  }
+}
+</script>
+</body>
+</html>
