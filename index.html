@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOFENG Web Terminal</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#0f0;font-family:monospace;font-size:14px;padding:10px;height:100vh;overflow:hidden}
+#term{height:calc(100vh - 40px);overflow-y:auto;white-space:pre-wrap}
+#input-line{display:flex}
+#prompt{color:#0ff}
+#cmd{flex:1;background:transparent;border:none;color:#0f0;outline:none;font:inherit}
+</style>
+</head>
+<body>
+<div id="term"></div>
+<div id="input-line">
+<span id="prompt">mofeng@webterm:~$ </span>
+<input id="cmd" autofocus autocomplete="off">
+</div>
+<script>
+const term = document.getElementById('term');
+const cmdInput = document.getElementById('cmd');
+
+// 内存文件系统
+const fs = {
+  "~": {
+    type: "dir",
+    children: {
+      "readme.txt": {type:"file",data:"MOFENG Web Terminal\n支持 ls cd pkg\nnano 跳转编辑器"},
+      "testdata": {type:"dir",children:{}}
+    }
+  }
+};
+let cwd = "~";
+
+function getDir(path){
+  let parts = path.split("/").filter(x=>x);
+  let cur = fs["~"];
+  for(let p of parts){
+    if(!cur.children?.[p]) return null;
+    cur = cur.children[p];
+  }
+  return cur;
+}
+function print(s){ term.textContent += s+"\n"; term.scrollTop = term.scrollHeight; }
+
+function runCmd(line){
+  let argv = line.trim().split(/\s+/);
+  if(!argv[0]) return;
+  const cmd = argv[0];
+  const arg = argv[1];
+  switch(cmd){
+    case "ls":{
+      const d = getDir(cwd);
+      if(!d || d.type !== "dir"){print("ls: 目录不存在");return}
+      let list = Object.keys(d.children).join("  ");
+      print(list || "(空)");
+      break;
+    }
+    case "cd":{
+      if(!arg){ cwd="~"; print("cd ~"); return; }
+      if(arg === ".."){
+        let p = cwd.split("/");
+        p.pop();
+        cwd = p.join("/") || "~";
+        print("cd "+cwd);
+        return;
+      }
+      const d = getDir(cwd+"/"+arg);
+      if(d && d.type === "dir"){
+        cwd += "/"+arg;
+        print("cd "+cwd);
+      }else{
+        print("cd: 没有这个目录: "+arg);
+      }
+      break;
+    }
+    case "pkg":{
+      if(!arg){
+        print("pkg 用法: pkg list | pkg install [name]");
+        return;
+      }
+      if(arg === "list"){
+        print("可用包: nano, curl, fetch");
+      }else if(arg === "install"){
+        print("pkg install "+argv[2]+" 完成（模拟）");
+      }else{
+        print("pkg: 未知子命令");
+      }
+      break;
+    }
+    case "nano":
+      print("打开 nano 编辑器 -> 跳转 nano.html");
+      setTimeout(()=>location.href="nano.html",300);
+      break;
+    case "clear":
+      term.textContent = "";
+      break;
+    default:
+      print(cmd + ": 命令未找到");
+  }
+}
+
+cmdInput.onkeydown = e=>{
+  if(e.key === "Enter"){
+    runCmd(cmdInput.value);
+    cmdInput.value = "";
+  }
+}
+print("MOFENG WebTerminal 就绪 | 命令：ls cd pkg | nano 打开编辑器");
+</script>
+</body>
+</html>
